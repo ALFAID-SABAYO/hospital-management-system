@@ -97,6 +97,27 @@ namespace Hospital.Controllers
         }
 
         // =====================================================
+        // 📋 MY APPOINTMENTS (Patient-specific view)
+        // =====================================================
+        [Authorize(Roles = "Patient")]
+        public async Task<IActionResult> MyAppointments()
+        {
+            var patientId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(patientId) || !int.TryParse(patientId, out int pid))
+                return RedirectToAction("Login", "Account");
+
+            var appointments = await _context.Appointments
+                .Where(a => a.patient_id == pid)
+                .Include(a => a.Doctor)
+                .Include(a => a.Patient)
+                .OrderByDescending(a => a.appointment_date)
+                .ToListAsync();
+
+            return View(appointments);
+        }
+
+        // =====================================================
         // 🔍 DETAILS
         // =====================================================
         public async Task<IActionResult> Details(int? id)
@@ -118,24 +139,35 @@ namespace Hospital.Controllers
         // =====================================================
         public IActionResult Create()
         {
-            // For Admin: load all patients
-            if (User.IsInRole("Admin"))
+            // Load patients based on role
+            var patients = _context.Patients.ToList();
+            if (User.IsInRole("Admin") || User.IsInRole("Doctor") || User.IsInRole("Receptionist"))
             {
-                ViewBag.patient_id = new SelectList(_context.Patients, "patient_id", "full_name");
+                // Admin, Doctor, or Receptionist can see all patients
+                ViewBag.patient_id = new SelectList(patients, "patient_id", "FullName");
             }
             else if (User.IsInRole("Patient"))
             {
-                // Get current patient based on logged-in user's email
-                var patient = _context.Patients.FirstOrDefault(p => p.email == User.Identity.Name);
+                // Patient can only see themselves
+                var patient = patients.FirstOrDefault(p => p.email == User.Identity?.Name);
                 if (patient != null)
                 {
-                    // Only include the current patient
-                    ViewBag.patient_id = new SelectList(new List<Patient> { patient }, "patient_id", "full_name");
+                    ViewBag.patient_id = new SelectList(new List<Patient> { patient }, "patient_id", "FullName");
+                }
+                else
+                {
+                    ViewBag.patient_id = new SelectList(new List<Patient>(), "patient_id", "FullName");
                 }
             }
+            else
+            {
+                // Fallback: empty list
+                ViewBag.patient_id = new SelectList(new List<Patient>(), "patient_id", "FullName");
+            }
 
-            // Load doctors
-            ViewBag.doctor_id = new SelectList(_context.Doctors, "doctor_id", "full_name");
+            // Load doctors - ensure it's never null
+            var doctors = _context.Doctors.Where(d => d.status == "Active").ToList();
+            ViewBag.doctor_id = new SelectList(doctors, "doctor_id", "FullName");
 
             return View();
         }
@@ -165,15 +197,31 @@ namespace Hospital.Controllers
             }
 
             // reload dropdowns
-            ViewBag.doctor_id = new SelectList(_context.Doctors, "doctor_id", "full_name", appointment.doctor_id);
+            var doctors = _context.Doctors.ToList();
+            ViewBag.doctor_id = doctors.Any()
+                ? new SelectList(doctors, "doctor_id", "FullName", appointment.doctor_id)
+                : new SelectList(new List<Doctor>(), "doctor_id", "FullName");
+                
             if (User.IsInRole("Admin"))
             {
-                ViewBag.patient_id = new SelectList(_context.Patients, "patient_id", "full_name", appointment.patient_id);
+                ViewBag.patient_id = new SelectList(_context.Patients, "patient_id", "FullName", appointment.patient_id);
             }
             else if (User.IsInRole("Patient"))
             {
                 var patient = _context.Patients.FirstOrDefault(p => p.email == User.Identity.Name);
-                ViewBag.patient_id = new SelectList(new List<Patient> { patient }, "patient_id", "full_name", patient.patient_id);
+                if (patient != null)
+                {
+                    ViewBag.patient_id = new SelectList(new List<Patient> { patient }, "patient_id", "FullName", patient.patient_id);
+                }
+                else
+                {
+                    ViewBag.patient_id = new SelectList(new List<Patient>(), "patient_id", "FullName");
+                }
+            }
+            else
+            {
+                // For Doctor or Receptionist
+                ViewBag.patient_id = new SelectList(_context.Patients, "patient_id", "FullName", appointment.patient_id);
             }
 
             return View(appointment);

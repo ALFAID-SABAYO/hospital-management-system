@@ -49,6 +49,11 @@ namespace Hospital.Controllers
             ViewBag.PaidBills = await bills.Where(b => b.payment_status == "Paid").CountAsync();
             ViewBag.PendingBills = await bills.Where(b => b.payment_status != "Paid").CountAsync();
 
+            // Store filter values for export functionality
+            ViewBag.FromDate = fromDate;
+            ViewBag.ToDate = toDate;
+            ViewBag.Status = status;
+
             return View(await bills.OrderByDescending(b => b.payment_date).ToListAsync());
         }
 
@@ -193,11 +198,81 @@ namespace Hospital.Controllers
             return View("Index", billings);
         }
 
-        // GET: Export Billing Summary as Excel (optional)
-        public async Task<IActionResult> ExportBillingSummaryExcel(DateTime? startDate, DateTime? endDate)
+        // GET: Export Financial Report as CSV
+        public async Task<IActionResult> ExportFinancialReport(DateTime? startDate = null, DateTime? endDate = null, string status = null)
         {
-            // Implement your Excel export logic here
-            return Content("Export Excel logic not implemented yet.");
+            var bills = _context.Billings
+                .Include(b => b.Appointment)
+                    .ThenInclude(a => a.Patient)
+                .Include(b => b.Appointment)
+                    .ThenInclude(a => a.Doctor)
+                .AsQueryable();
+
+            // Apply filters
+            if (startDate.HasValue)
+                bills = bills.Where(b => b.Appointment != null && b.Appointment.appointment_date >= startDate.Value);
+
+            if (endDate.HasValue)
+                bills = bills.Where(b => b.Appointment != null && b.Appointment.appointment_date <= endDate.Value);
+
+            if (!string.IsNullOrEmpty(status))
+                bills = bills.Where(b => b.payment_status == status);
+
+            var billsList = await bills.OrderByDescending(b => b.payment_date ?? DateTime.MinValue).ToListAsync();
+
+            // Generate CSV content
+            var csv = "Bill ID,Patient Name,Appointment Date,Doctor,Amount,Payment Status,Payment Date\n";
+            foreach (var bill in billsList)
+            {
+                var patientName = bill.Appointment?.Patient != null 
+                    ? $"{bill.Appointment.Patient.first_name} {bill.Appointment.Patient.last_name}" 
+                    : "N/A";
+                var appointmentDate = bill.Appointment?.appointment_date.ToString("yyyy-MM-dd") ?? "N/A";
+                var doctorName = bill.Appointment?.Doctor != null 
+                    ? $"Dr. {bill.Appointment.Doctor.first_name} {bill.Appointment.Doctor.last_name}" 
+                    : "N/A";
+                var paymentDate = bill.payment_date?.ToString("yyyy-MM-dd") ?? "Pending";
+                
+                csv += $"{bill.bill_id},\"{patientName}\",{appointmentDate},\"{doctorName}\",{bill.total_amount},{bill.payment_status},{paymentDate}\n";
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+            var fileName = $"FinancialReport_{startDate?.ToString("yyyyMMdd") ?? "All"}_{endDate?.ToString("yyyyMMdd") ?? DateTime.Today.ToString("yyyyMMdd")}.csv";
+            return File(bytes, "text/csv", fileName);
+        }
+
+        // GET: Export Financial Report Summary as CSV
+        public async Task<IActionResult> ExportFinancialSummary(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            var start = startDate ?? DateTime.Today.AddMonths(-1);
+            var end = endDate ?? DateTime.Today;
+
+            var bills = await _context.Billings
+                .Include(b => b.Appointment)
+                .Where(b => b.Appointment != null && 
+                           b.Appointment.appointment_date >= start && 
+                           b.Appointment.appointment_date <= end)
+                .ToListAsync();
+
+            var totalAmount = bills.Sum(b => b.total_amount);
+            var paidAmount = bills.Where(b => b.payment_status == "Paid").Sum(b => b.total_amount);
+            var pendingAmount = bills.Where(b => b.payment_status == "Pending").Sum(b => b.total_amount);
+
+            // Generate summary CSV
+            var csv = "Financial Report Summary\n";
+            csv += $"Report Period: {start:yyyy-MM-dd} to {end:yyyy-MM-dd}\n";
+            csv += $"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n";
+            csv += "Category,Amount\n";
+            csv += $"Total Bills,{bills.Count}\n";
+            csv += $"Total Amount,{totalAmount:C}\n";
+            csv += $"Paid Amount,{paidAmount:C}\n";
+            csv += $"Pending Amount,{pendingAmount:C}\n";
+            csv += $"Paid Bills,{bills.Count(b => b.payment_status == "Paid")}\n";
+            csv += $"Pending Bills,{bills.Count(b => b.payment_status == "Pending")}\n";
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+            var fileName = $"FinancialSummary_{start:yyyyMMdd}_{end:yyyyMMdd}.csv";
+            return File(bytes, "text/csv", fileName);
         }
     }
 }

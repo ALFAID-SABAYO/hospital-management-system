@@ -16,15 +16,23 @@
     <label asp-for="patient_id" class="control-label"></label>
     @{
         var isDisabled = User.IsInRole("Patient") ? "disabled" : "";
+        var patientList = ViewBag.patient_id as SelectList ?? new SelectList(new List<SelectListItem>());
     }
-    <select asp-for="patient_id" class="form-control" asp-items="ViewBag.patient_id" disabled="@isDisabled"></select>
+    <select asp-for="patient_id" class="form-control" asp-items="patientList" disabled="@isDisabled">
+        <option value="">-- Select Patient --</option>
+    </select>
     <span asp-validation-for="patient_id" class="text-danger"></span>
 </div>
 
             <!-- Doctor Dropdown -->
             <div class="form-group mb-3">
                 <label asp-for="doctor_id" class="control-label"></label>
-                <select asp-for="doctor_id" class="form-control" asp-items="ViewBag.doctor_id"></select>
+                @{
+                    var doctorList = ViewBag.doctor_id as SelectList ?? new SelectList(new List<SelectListItem>());
+                }
+                <select asp-for="doctor_id" class="form-control" asp-items="doctorList">
+                    <option value="">-- Select Doctor --</option>
+                </select>
                 <span asp-validation-for="doctor_id" class="text-danger"></span>
             </div>
 

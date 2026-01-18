@@ -108,43 +108,53 @@ else
             <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Bills</h5>
         </div>
         <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white">
-                            <i class="fas fa-calendar-alt text-primary"></i>
-                        </span>
-                        <input type="date" class="form-control" placeholder="From Date">
+            <form method="get" asp-action="Index">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="fas fa-calendar-alt text-primary"></i>
+                            </span>
+                            <input type="date" name="fromDate" class="form-control" value="@(ViewBag.FromDate?.ToString("yyyy-MM-dd"))" placeholder="From Date">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="fas fa-calendar-alt text-primary"></i>
+                            </span>
+                            <input type="date" name="toDate" class="form-control" value="@(ViewBag.ToDate?.ToString("yyyy-MM-dd"))" placeholder="To Date">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="fas fa-dollar-sign text-success"></i>
+                            </span>
+                            <select name="status" class="form-control">
+                                <option value="">All Status</option>
+                                <option value="Paid" selected="@(ViewBag.Status == "Paid")">Paid</option>
+                                <option value="Pending" selected="@(ViewBag.Status == "Pending")">Pending</option>
+                                <option value="Overdue" selected="@(ViewBag.Status == "Overdue")">Overdue</option>
+                                <option value="Cancelled" selected="@(ViewBag.Status == "Cancelled")">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>Apply Filters
+                        </button>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white">
-                            <i class="fas fa-calendar-alt text-primary"></i>
-                        </span>
-                        <input type="date" class="form-control" placeholder="To Date">
+                @if (ViewBag.FromDate != null || ViewBag.ToDate != null || ViewBag.Status != null)
+                {
+                    <div class="mt-2">
+                        <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Clear Filters
+                        </a>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white">
-                            <i class="fas fa-dollar-sign text-success"></i>
-                        </span>
-                        <select class="form-control">
-                            <option value="">All Status</option>
-                            <option value="Paid">Paid</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Overdue">Overdue</option>
-                            <option value="Cancelled">Cancelled</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-primary w-100">
-                        <i class="fas fa-filter me-2"></i>Apply Filters
-                    </button>
-                </div>
-            </div>
+                }
+            </form>
         </div>
     </div>
 
@@ -357,11 +367,47 @@ else
         </div>
     </div>
 
-    <!-- Export Button -->
-    <div class="text-center mt-4">
-        <a href="#" class="btn btn-outline-primary btn-lg">
-            <i class="fas fa-file-export me-2"></i>Export Financial Report
-        </a>
+    <!-- Export Buttons -->
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-file-export me-2"></i>Export Financial Reports</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <a href="@Url.Action("ExportFinancialReport", "Billings", new { 
+                        startDate = ViewBag.FromDate, 
+                        endDate = ViewBag.ToDate, 
+                        status = ViewBag.Status 
+                    })" class="btn btn-primary w-100">
+                        <i class="fas fa-file-csv me-2"></i>Export Detailed Report (CSV)
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="@Url.Action("ExportFinancialSummary", "Billings", new { 
+                        startDate = ViewBag.FromDate ?? DateTime.Today.AddMonths(-1), 
+                        endDate = ViewBag.ToDate ?? DateTime.Today 
+                    })" class="btn btn-success w-100">
+                        <i class="fas fa-chart-pie me-2"></i>Export Summary Report (CSV)
+                    </a>
+                </div>
+            </div>
+            <div class="alert alert-info mt-3 mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Note:</strong> Reports will be exported in CSV format. You can open them in Excel or any spreadsheet application.
+                @if (ViewBag.FromDate != null || ViewBag.ToDate != null)
+                {
+                    <text><br>Current filter: </text>
+                    @if (ViewBag.FromDate != null) { <text>From @(((DateTime)ViewBag.FromDate).ToString("yyyy-MM-dd"))</text> }
+                    @if (ViewBag.ToDate != null) { <text>To @(((DateTime)ViewBag.ToDate).ToString("yyyy-MM-dd"))</text> }
+                    @if (ViewBag.Status != null) { <text>| Status: @ViewBag.Status</text> }
+                }
+                else
+                {
+                    <text><br>All bills will be included in the export.</text>
+                }
+            </div>
+        </div>
     </div>
 }
 

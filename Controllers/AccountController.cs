@@ -452,7 +452,9 @@ namespace Hospital.Controllers
 
         private string GenerateJwtToken(Claim[] claims)
         {
-            var key = Encoding.UTF8.GetBytes(_config["JWT:Key"]);
+            var jwtKey = _config["JWT:Key"] ?? throw new InvalidOperationException("JWT:Key is not configured");
+            var key = Encoding.UTF8.GetBytes(jwtKey);
+            
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),

@@ -216,12 +216,20 @@ namespace Hospital.Controllers
             var monthStart = new DateTime(today.Year, today.Month, 1);
             var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
-            ViewBag.TodayAppointments = doctor.Appointments?.Count(a => a.appointment_date.Date == today) ?? 0;
-            ViewBag.MonthAppointments = doctor.Appointments?.Count(a => a.appointment_date >= monthStart && a.appointment_date <= monthEnd) ?? 0;
-            ViewBag.CompletedAppointments = doctor.Appointments?.Count(a => a.status == "Completed") ?? 0;
-            ViewBag.TotalPatients = doctor.Appointments?.Select(a => a.patient_id).Distinct().Count() ?? 0;
-            ViewBag.TotalRevenue = doctor.Appointments?.Where(a => a.Billing != null).Sum(a => a.Billing.total_amount) ?? 0;
+            var allAppointments = doctor.Appointments?.ToList() ?? new List<Appointment>();
+            var todayAppointments = allAppointments.Where(a => a.appointment_date.Date == today).ToList();
+            var upcomingAppointments = allAppointments.Where(a => a.appointment_date > today && a.status != "Cancelled" && a.status != "Completed").OrderBy(a => a.appointment_date).Take(10).ToList();
+            var pastAppointments = allAppointments.Where(a => a.appointment_date < today && (a.status == "Scheduled" || a.status == "Confirmed")).OrderByDescending(a => a.appointment_date).Take(10).ToList();
+
+            ViewBag.TodayAppointments = todayAppointments.Count;
+            ViewBag.MonthAppointments = allAppointments.Count(a => a.appointment_date >= monthStart && a.appointment_date <= monthEnd);
+            ViewBag.CompletedAppointments = allAppointments.Count(a => a.status == "Completed");
+            ViewBag.TotalPatients = allAppointments.Select(a => a.patient_id).Distinct().Count();
+            ViewBag.TotalRevenue = allAppointments.Where(a => a.Billing != null).Sum(a => a.Billing.total_amount);
             ViewBag.Today = today.ToString("MMMM dd, yyyy");
+            ViewBag.UpcomingAppointments = upcomingAppointments;
+            ViewBag.PastAppointments = pastAppointments;
+            ViewBag.TodayAppointmentsList = todayAppointments.OrderBy(a => a.appointment_date).ToList();
 
             return View(doctor);
         }

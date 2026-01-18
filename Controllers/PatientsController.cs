@@ -27,14 +27,23 @@ namespace Hospital.Controllers
         {
             var patients = _context.Patients.AsQueryable();
 
-            // Search
+            // Search by name, ID, contact number, or email
             if (!string.IsNullOrEmpty(searchString))
             {
-                patients = patients.Where(p =>
-                    p.first_name.Contains(searchString) ||
-                    p.last_name.Contains(searchString) ||
-                    p.contact_number.Contains(searchString) ||
-                    p.email.Contains(searchString));
+                // Try to parse as patient ID if it's a number
+                if (int.TryParse(searchString, out int patientId))
+                {
+                    patients = patients.Where(p => p.patient_id == patientId);
+                }
+                else
+                {
+                    patients = patients.Where(p =>
+                        p.first_name.Contains(searchString) ||
+                        p.last_name.Contains(searchString) ||
+                        (p.first_name + " " + p.last_name).Contains(searchString) ||
+                        p.contact_number.Contains(searchString) ||
+                        p.email.Contains(searchString));
+                }
             }
 
             // Filter blood group
@@ -282,17 +291,38 @@ namespace Hospital.Controllers
 
             if (patient == null) return RedirectToAction("Login", "Account");
 
+            // Get all appointments for this patient
+            var allAppointments = patient.Appointments?.ToList() ?? new List<Appointment>();
+            var upcomingAppointments = allAppointments.Where(a => a.appointment_date > DateTime.Now && a.status != "Cancelled" && a.status != "Completed").OrderBy(a => a.appointment_date).Take(5).ToList();
+            var recentAppointments = allAppointments.OrderByDescending(a => a.appointment_date).Take(5).ToList();
+            
+            // Past appointments that need attention
+            var pastAppointments = allAppointments.Where(a => a.appointment_date < DateTime.Now && (a.status == "Scheduled" || a.status == "Confirmed")).OrderByDescending(a => a.appointment_date).ToList();
+            
+            // Get all bills for this patient
+            var bills = allAppointments.Where(a => a.Billing != null).Select(a => a.Billing).ToList();
+            
+            // Overdue bills (more than 30 days old and still pending)
+            var overdueBills = bills.Where(b => b.payment_status != "Paid" && 
+                                                b.Appointment != null && 
+                                                b.Appointment.appointment_date < DateTime.Now.AddDays(-30)).ToList();
+
+            // Get medical records
+            var medicalRecords = allAppointments.Where(a => a.MedicalRecord != null).Select(a => a.MedicalRecord).OrderByDescending(mr => mr.visit_date).Take(5).ToList();
+
             ViewBag.PatientName = $"{patient.first_name} {patient.last_name}";
             ViewBag.PatientId = pid;
-            ViewBag.TotalAppointments = patient.Appointments?.Count ?? 0;
-            ViewBag.UpcomingAppointments = patient.Appointments?.Count(a => a.appointment_date > DateTime.Now && a.status != "Cancelled" && a.status != "Completed") ?? 0;
-            ViewBag.PendingBills = patient.Appointments?.Where(a => a.Billing != null && a.Billing.payment_status != "Paid").Sum(a => a.Billing.total_amount) ?? 0;
-            ViewBag.MedicalRecords = patient.Appointments?.Count(a => a.MedicalRecord != null) ?? 0;
-
-            ViewBag.RecentAppointments = patient.Appointments?.Where(a => a.appointment_date > DateTime.Now).OrderBy(a => a.appointment_date).Take(5).ToList() ?? new List<Appointment>();
-            ViewBag.RecentRecords = patient.Appointments?.Where(a => a.MedicalRecord != null).Select(a => a.MedicalRecord).OrderByDescending(mr => mr.visit_date).Take(5).ToList() ?? new List<MedicalRecord>();
-
-            ViewBag.HasData = ViewBag.TotalAppointments > 0;
+            ViewBag.TotalAppointments = allAppointments.Count;
+            ViewBag.UpcomingAppointments = upcomingAppointments;
+            ViewBag.RecentAppointments = recentAppointments;
+            ViewBag.AllAppointments = allAppointments;
+            ViewBag.PastAppointments = pastAppointments;
+            ViewBag.Bills = bills;
+            ViewBag.OverdueBills = overdueBills;
+            ViewBag.PendingBills = bills.Where(b => b.payment_status != "Paid").Sum(b => b.total_amount);
+            ViewBag.TotalBills = bills.Sum(b => b.total_amount);
+            ViewBag.MedicalRecords = medicalRecords;
+            ViewBag.RecentRecords = medicalRecords;
 
             return View(patient);
         }

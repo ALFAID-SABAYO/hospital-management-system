@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Hospital.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Hospital.Controllers
 {
@@ -17,6 +18,34 @@ namespace Hospital.Controllers
 
         public IActionResult Index()
         {
+            // Redirect authenticated users to their role-specific dashboard
+            if (User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Admin"))
+                {
+                    return RedirectToAction("Dashboard", "Admin");
+                }
+                else if (User.IsInRole("Receptionist"))
+                {
+                    return RedirectToAction("Dashboard", "Receptionist");
+                }
+                else if (User.IsInRole("Doctor"))
+                {
+                    var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out int userId))
+                    {
+                        return RedirectToAction("Dashboard", "Doctors", new { id = userId });
+                    }
+                }
+                else if (User.IsInRole("Patient"))
+                {
+                    var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out int userId))
+                    {
+                        return RedirectToAction("Dashboard", "Patients", new { id = userId });
+                    }
+                }
+            }
             return View();
         }
 

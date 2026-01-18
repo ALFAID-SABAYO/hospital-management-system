@@ -166,13 +166,27 @@
                                     <i class="fas fa-user-circle me-1"></i> @User.Identity.Name
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    @if (User.IsInRole("Patient"))
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li><a class="dropdown-item" href="/Admin/Dashboard"><i class="fas fa-tachometer-alt me-2"></i> Admin Dashboard</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    else if (User.IsInRole("Receptionist"))
+                                    {
+                                        <li><a class="dropdown-item" href="/Receptionist/Dashboard"><i class="fas fa-tachometer-alt me-2"></i> Receptionist Dashboard</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    else if (User.IsInRole("Doctor"))
+                                    {
+                                        <li><a class="dropdown-item" href="/Doctors/Dashboard/@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value"><i class="fas fa-tachometer-alt me-2"></i> Doctor Dashboard</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    else if (User.IsInRole("Patient"))
                                     {
                                         <li><a class="dropdown-item" href="/Patients/Dashboard"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a></li>
                                         <li><a class="dropdown-item" href="/Patients/Details/@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value"><i class="fas fa-user me-2"></i> My Profile</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                     }
-                                    <!-- REMOVED ADMIN PANEL LINK - Admin sees only Logout -->
                                     <li>
                                         <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
                                             <button type="submit" class="dropdown-item text-danger">

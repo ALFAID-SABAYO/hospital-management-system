@@ -1,10 +1,43 @@
 ﻿@model IEnumerable<Hospital.Models.CalendarEvent>
 
-<div id="calendar"></div>
+@{
+    ViewData["Title"] = "Appointment Calendar";
+}
+
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-calendar-alt text-primary me-2"></i>Appointment Calendar</h2>
+            <p class="text-muted">View and manage appointments</p>
+        </div>
+        <div>
+            <a href="@Url.Action("Index", "Appointments")" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-2"></i>List View
+            </a>
+            @if (User.IsInRole("Admin") || User.IsInRole("Receptionist") || User.IsInRole("Patient"))
+            {
+                <a href="@Url.Action("Create", "Appointments")" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>New Appointment
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
+        var events = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             headerToolbar: {
@@ -12,14 +45,30 @@
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
-            events: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model)),
+            events: events,
             eventClick: function(info) {
                 if(info.event.url){
-                    window.open(info.event.url, "_self");
+                    window.location.href = info.event.url;
                     info.jsEvent.preventDefault();
                 }
+            },
+            eventDisplay: 'block',
+            height: 'auto',
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                meridiem: 'short'
             }
         });
         calendar.render();
     });
 </script>
+
+<style>
+    .fc-event {
+        cursor: pointer;
+    }
+    .fc-event:hover {
+        opacity: 0.8;
+    }
+</style>
