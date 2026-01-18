@@ -1,0 +1,287 @@
+﻿@{
+    ViewData["Title"] = "Hospital Management System";
+}
+
+<!-- Hero Section -->
+<div class="hero-section text-center py-5 my-5" style="
+    background: linear-gradient(135deg, #0d6efd 0%, #198754 100%);
+    border-radius: 15px;
+    color: white;
+    padding: 60px 20px;
+">
+    <h1 class="display-4 fw-bold mb-3">
+        <i class="fas fa-hospital fa-2x mb-3"></i><br>
+        Welcome to Szabist Hospital
+    </h1>
+    <p class="lead mb-4">Advanced Healthcare Management System for Modern Medical Facilities</p>
+
+    <!-- Conditional buttons based on authentication -->
+    @if (User.Identity.IsAuthenticated)
+    {
+        if (User.IsInRole("Patient"))
+        {
+            <a href="/Patients/Dashboard" class="btn btn-light btn-lg px-4 me-3">
+                <i class="fas fa-tachometer-alt"></i> My Dashboard
+            </a>
+            <a href="/Doctors" class="btn btn-outline-light btn-lg px-4">
+                <i class="fas fa-user-md"></i> View Doctors
+            </a>
+        }
+        else if (User.IsInRole("Admin") || User.IsInRole("Doctor"))
+        {
+            <a href="/Patients" class="btn btn-light btn-lg px-4 me-3">
+                <i class="fas fa-user-injured"></i> Manage Patients
+            </a>
+            <a href="/Doctors" class="btn btn-outline-light btn-lg px-4">
+                <i class="fas fa-user-md"></i> View Doctors
+            </a>
+        }
+    }
+    else
+    {
+        <!-- For non-logged in users -->
+        <a href="/Doctors" class="btn btn-light btn-lg px-4 me-3">
+            <i class="fas fa-user-md"></i> View Doctors
+        </a>
+        <a href="/DoctorSchedules" class="btn btn-outline-light btn-lg px-4">
+            <i class="fas fa-calendar-alt"></i> View Schedules
+        </a>
+    }
+</div>
+
+<!-- Features Section -->
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center border-0 shadow-lg">
+            <div class="card-body p-4">
+                <div class="feature-icon mb-3" style="
+                    background: linear-gradient(135deg, #0d6efd 0%, #198754 100%);
+                    width: 80px;
+                    height: 80px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 20px;
+                ">
+                    <i class="fas fa-user-injured fa-2x text-white"></i>
+                </div>
+                <h3 class="h4 mb-3">Patient Management</h3>
+                <p class="text-muted">Comprehensive patient records, medical history, and appointment scheduling.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center border-0 shadow-lg">
+            <div class="card-body p-4">
+                <div class="feature-icon mb-3" style="
+                    background: linear-gradient(135deg, #20c997 0%, #0dcaf0 100%);
+                    width: 80px;
+                    height: 80px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 20px;
+                ">
+                    <i class="fas fa-user-md fa-2x text-white"></i>
+                </div>
+                <h3 class="h4 mb-3">Doctor Portal</h3>
+                <p class="text-muted">Doctor schedules, patient appointments, prescriptions, and medical records.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center border-0 shadow-lg">
+            <div class="card-body p-4">
+                <div class="feature-icon mb-3" style="
+                    background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+                    width: 80px;
+                    height: 80px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 20px;
+                ">
+                    <i class="fas fa-calendar-check fa-2x text-white"></i>
+                </div>
+                <h3 class="h4 mb-3">Appointments</h3>
+                <p class="text-muted">Easy booking, scheduling, and management of patient appointments.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h3 class="text-center mb-4">Hospital Statistics</h3>
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-number display-6 fw-bold text-primary">150+</div>
+                        <div class="stat-label text-muted">Patients Served</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-number display-6 fw-bold text-success">25+</div>
+                        <div class="stat-label text-muted">Expert Doctors</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-number display-6 fw-bold text-info">500+</div>
+                        <div class="stat-label text-muted">Appointments</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-number display-6 fw-bold text-warning">24/7</div>
+                        <div class="stat-label text-muted">Emergency Service</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <h3 class="text-center mb-4">Quick Actions</h3>
+        <div class="row g-3">
+            @if (User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Admin") || User.IsInRole("Doctor"))
+                {
+                    <!-- Admin/Doctor Quick Actions -->
+                    <div class="col-md-3 col-6">
+                        <a href="/Patients/Create" class="btn btn-primary w-100 py-3">
+                            <i class="fas fa-user-plus me-2"></i>Register Patient
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="/Appointments/Create" class="btn btn-success w-100 py-3">
+                            <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="/Doctors" class="btn btn-info w-100 py-3">
+                            <i class="fas fa-stethoscope me-2"></i>View Doctors
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="/MedicalRecords" class="btn btn-warning w-100 py-3">
+                            <i class="fas fa-file-medical me-2"></i>Medical Records
+                        </a>
+                    </div>
+                }
+                else if (User.IsInRole("Patient"))
+                {
+                    <!-- Patient Quick Actions -->
+                    <div class="col-md-3 col-6">
+                        <a href="/Appointments/MyAppointments" class="btn btn-primary w-100 py-3">
+                            <i class="fas fa-calendar-check me-2"></i>My Appointments
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="/Appointments/Create" class="btn btn-success w-100 py-3">
+                            <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="/Doctors" class="btn btn-info w-100 py-3">
+                            <i class="fas fa-stethoscope me-2"></i>View Doctors
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="/MedicalRecords/MyRecords" class="btn btn-warning w-100 py-3">
+                            <i class="fas fa-file-medical me-2"></i>My Records
+                        </a>
+                    </div>
+                }
+            }
+            else
+            {
+                <!-- Non-logged in Quick Actions -->
+                <div class="col-md-3 col-6">
+                    <a href="/Doctors" class="btn btn-primary w-100 py-3">
+                        <i class="fas fa-stethoscope me-2"></i>View Doctors
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="/Departments" class="btn btn-success w-100 py-3">
+                        <i class="fas fa-hospital me-2"></i>View Departments
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="/DoctorSchedules" class="btn btn-info w-100 py-3">
+                        <i class="fas fa-calendar-alt me-2"></i>View Schedules
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="/Account/Register" class="btn btn-warning w-100 py-3">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Footer Note -->
+<div class="text-center mt-5 pt-4 border-top">
+    <p class="text-muted">
+        <i class="fas fa-shield-alt text-primary me-2"></i>
+        Secure & HIPAA Compliant Medical Records Management
+    </p>
+    <small class="text-muted">
+        <i class="fas fa-clock text-success me-1"></i>
+        Last Updated: @DateTime.Now.ToString("MMMM dd, yyyy")
+    </small>
+</div>
+
+<style>
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+    }
+
+        .hero-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+
+        .hero-section > * {
+            position: relative;
+            z-index: 1;
+        }
+
+    .feature-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover .feature-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        line-height: 1;
+    }
+
+    .btn {
+        transition: all 0.3s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+</style>

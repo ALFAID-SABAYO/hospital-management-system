@@ -1,0 +1,82 @@
+﻿@model IEnumerable<Hospital.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Doctor Appointments";
+    var doctor = ViewBag.Doctor as Hospital.Models.Doctor;
+}
+
+<h2>Appointments</h2>
+<h4>Dr. @doctor?.first_name @doctor?.last_name</h4>
+<hr />
+
+<!-- Filter Section -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Filter Appointments</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row">
+            <div class="col-md-4">
+                <label>Status</label>
+                <select name="status" class="form-control">
+                    <option value="all">All Appointments</option>
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label>Date</label>
+                <input type="date" name="date" class="form-control" />
+            </div>
+            <div class="col-md-4 mt-4">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="@Url.Action("Appointments", new { id = doctor?.doctor_id })" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Appointments Table -->
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Appointment ID</th>
+                    <th>Patient</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var appointment in Model)
+                {
+                    <tr>
+                        <td>@appointment.appointment_id</td>
+                        <td>Patient #@appointment.patient_id</td>
+                        <td>@appointment.appointment_date</td>
+                        <td>
+                            <span class="badge bg-@(appointment.status == "Completed" ? "success" :
+                                                                                 appointment.status == "Cancelled" ? "danger" :
+                                                                                 "warning")">
+                                @appointment.status
+                            </span>
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-info">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Details" asp-route-id="@doctor?.doctor_id" class="btn btn-secondary">Back to Doctor Details</a>
+    <a asp-action="Dashboard" asp-route-id="@doctor?.doctor_id" class="btn btn-primary">Go to Dashboard</a>
+</div>

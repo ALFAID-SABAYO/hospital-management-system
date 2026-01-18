@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-chart-bar text-primary"></i> Reports</h2>
+            <p class="text-muted">View and export hospital reports</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Daily Appointments Report -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-calendar-day text-primary"></i> Daily Appointments</h5>
+                    <p class="card-text text-muted">View appointments for a specific date</p>
+                    <form asp-action="DailyAppointments" method="get" class="mb-3">
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Select Date</label>
+                            <input type="date" name="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-eye"></i> View Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Billing Summary Report -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-file-invoice-dollar text-success"></i> Billing Summary</h5>
+                    <p class="card-text text-muted">View billing summary for a date range</p>
+                    <form asp-action="BillingSummary" method="get" class="mb-3">
+                        <div class="mb-3">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" name="startDate" class="form-control" value="@DateTime.Today.AddDays(-30).ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" name="endDate" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-eye"></i> View Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

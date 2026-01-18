@@ -1,0 +1,152 @@
+﻿@{
+    ViewData["Title"] = "Doctor Performance";
+    var doctor = ViewBag.Doctor as Hospital.Models.Doctor;
+    var startDate = ViewBag.StartDate as DateTime? ?? DateTime.Today.AddMonths(-3);
+    var endDate = ViewBag.EndDate as DateTime? ?? DateTime.Today;
+}
+
+<h2>Doctor Performance</h2>
+<h4>Dr. @doctor?.first_name @doctor?.last_name</h4>
+<hr />
+
+<!-- Date Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row">
+            <div class="col-md-3">
+                <label>From Date</label>
+                <input type="date" name="fromDate" value="@startDate.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label>To Date</label>
+                <input type="date" name="toDate" value="@endDate.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <div class="col-md-3 mt-4">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="@Url.Action("Performance", new { id = doctor?.doctor_id })" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Performance Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h5>Total Appointments</h5>
+                <h3>@ViewBag.TotalAppointments</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h5>Completed</h5>
+                <h3>@ViewBag.CompletedAppointments</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h5>Completion Rate</h5>
+                <h3>@ViewBag.CompletionRate%</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h5>Total Revenue</h5>
+                <h3>$@ViewBag.TotalRevenue</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Stats -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5>Cancelled Appointments</h5>
+                <h3>@ViewBag.CancelledAppointments</h3>
+                <small>Cancellation Rate: @ViewBag.CancellationRate%</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5>No-show Appointments</h5>
+                <h3>@ViewBag.NoShowAppointments</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5>Prescriptions & Tests</h5>
+                <div class="row">
+                    <div class="col-6">
+                        <h6>Prescriptions</h6>
+                        <h4>@ViewBag.PrescriptionsCount</h4>
+                    </div>
+                    <div class="col-6">
+                        <h6>Tests</h6>
+                        <h4>@ViewBag.TestsCount</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Statistics Table -->
+<div class="card">
+    <div class="card-header">
+        <h5>Monthly Performance</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Total Appointments</th>
+                    <th>Completed</th>
+                    <th>Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.MonthlyStats != null)
+                {
+                    var monthlyStats = ViewBag.MonthlyStats as List<Hospital.Controllers.DoctorsController.MonthlyStat>;
+                    if (monthlyStats != null)
+                    {
+                        foreach (var stat in monthlyStats)
+                        {
+                            <tr>
+                                <td>@stat.Month</td>
+                                <td>@stat.Total</td>
+                                <td>@stat.Completed</td>
+                                <td>$@stat.Revenue</td>
+                            </tr>
+                        }
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center">No data available</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Details" asp-route-id="@doctor?.doctor_id" class="btn btn-secondary">Back to Doctor Details</a>
+    <a asp-action="Dashboard" asp-route-id="@doctor?.doctor_id" class="btn btn-primary">View Dashboard</a>
+</div>

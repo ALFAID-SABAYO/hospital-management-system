@@ -1,0 +1,44 @@
+﻿@model Hospital.Models.Billing
+
+@{
+    ViewData["Title"] = "Create Billing";
+}
+
+<h2>Create Billing</h2>
+
+<!-- Display validation summary -->
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="appointment_id" class="control-label"></label>
+        <select asp-for="appointment_id" class="form-control" asp-items="ViewBag.appointment_id"></select>
+        <span asp-validation-for="appointment_id" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="total_amount" class="control-label"></label>
+        <input asp-for="total_amount" class="form-control" />
+        <span asp-validation-for="total_amount" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="payment_status" class="control-label"></label>
+        <input asp-for="payment_status" class="form-control" />
+        <span asp-validation-for="payment_status" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="payment_date" class="control-label"></label>
+        <input asp-for="payment_date" class="form-control" type="datetime-local" />
+        <span asp-validation-for="payment_date" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a asp-action="Index" class="btn btn-secondary ml-2">Back</a>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,416 @@
+﻿@model IEnumerable<Hospital.Models.Billing>
+
+@{
+    ViewData["Title"] = "Billing Management";
+    var hasBills = Model != null && Model.Any();
+    var totalAmount = Model?.Sum(b => b.total_amount) ?? 0;
+    var paidAmount = Model?.Where(b => b.payment_status == "Paid").Sum(b => b.total_amount) ?? 0;
+    var pendingAmount = Model?.Where(b => b.payment_status != "Paid").Sum(b => b.total_amount) ?? 0;
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-file-invoice-dollar text-primary"></i> Billing Management</h2>
+        <p class="text-muted">Manage patient invoices, payments, and billing records</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary btn-lg">
+        <i class="fas fa-plus-circle"></i> Create Invoice
+    </a>
+</div>
+
+@if (!hasBills)
+{
+    <!-- No Data Message -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+            <h3 class="text-muted">No Bills Found</h3>
+
+            @if (User.IsInRole("Patient"))
+            {
+                <p class="text-muted mb-4">You don't have any bills or invoices yet.</p>
+                <p class="text-muted small mb-4">Bills will appear here after you have appointments.</p>
+                <a href="/Appointments/Create" class="btn btn-primary btn-lg">
+                    <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                </a>
+            }
+            else
+            {
+                <p class="text-muted mb-4">There are no bills in the system yet.</p>
+                <a asp-action="Create" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus-circle me-2"></i>Create First Bill
+                </a>
+            }
+
+            <div class="mt-4">
+                <p class="text-muted small">Or explore other options:</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="/Appointments" class="btn btn-outline-primary">
+                        <i class="fas fa-calendar-check me-2"></i>View Appointments
+                    </a>
+                    <a href="/Patients" class="btn btn-outline-success">
+                        <i class="fas fa-user-injured me-2"></i>View Patients
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-gradient-primary text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-receipt fa-3x mb-3 opacity-75"></i>
+                    <h2 class="display-5 fw-bold">@Model.Count()</h2>
+                    <p class="mb-0 fs-5">Total Bills</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-gradient-success text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-check-circle fa-3x mb-3 opacity-75"></i>
+                    <h2 class="display-5 fw-bold">@paidAmount.ToString("C")</h2>
+                    <p class="mb-0 fs-5">Total Paid</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-gradient-warning text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-clock fa-3x mb-3 opacity-75"></i>
+                    <h2 class="display-5 fw-bold">@pendingAmount.ToString("C")</h2>
+                    <p class="mb-0 fs-5">Pending Amount</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-gradient-info text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-chart-line fa-3x mb-3 opacity-75"></i>
+                    <h2 class="display-5 fw-bold">@totalAmount.ToString("C")</h2>
+                    <p class="mb-0 fs-5">Total Revenue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Bills</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-calendar-alt text-primary"></i>
+                        </span>
+                        <input type="date" class="form-control" placeholder="From Date">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-calendar-alt text-primary"></i>
+                        </span>
+                        <input type="date" class="form-control" placeholder="To Date">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-dollar-sign text-success"></i>
+                        </span>
+                        <select class="form-control">
+                            <option value="">All Status</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Overdue">Overdue</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i>Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-day me-2"></i>Today
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-success w-100">
+                                <i class="fas fa-calendar-week me-2"></i>This Week
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-info w-100">
+                                <i class="fas fa-calendar me-2"></i>This Month
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-clock me-2"></i>Pending
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-exclamation-circle me-2"></i>Overdue
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-history me-2"></i>All
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> *@
+
+    <!-- Bills Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">
+                                <i class="fas fa-hashtag me-2"></i>Bill ID
+                            </th>
+                            <th>
+                                <i class="fas fa-user-injured me-2"></i>Patient
+                            </th>
+                            <th>
+                                <i class="fas fa-calendar-check me-2"></i>Appointment
+                            </th>
+                            <th>
+                                <i class="fas fa-dollar-sign me-2"></i>Amount
+                            </th>
+                            <th>
+                                <i class="fas fa-info-circle me-2"></i>Status
+                            </th>
+                            <th>
+                                <i class="fas fa-calendar-alt me-2"></i>Payment Date
+                            </th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">
+                                        BILL-@item.bill_id
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3" style="
+                                                        width: 40px;
+                                                        height: 40px;
+                                                        background: linear-gradient(135deg, #0d6efd 0%, #198754 100%);
+                                                        border-radius: 50%;
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        color: white;
+                                                        font-weight: bold;
+                                                    ">
+                                            P
+                                        </div>
+                                        <div>
+                                            <strong>Patient #@item.Appointment?.patient_id</strong>
+                                            <div class="small text-muted">Appointment: @item.Appointment?.appointment_id</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3" style="
+                                                        width: 40px;
+                                                        height: 40px;
+                                                        background: linear-gradient(135deg, #20c997 0%, #0dcaf0 100%);
+                                                        border-radius: 50%;
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        color: white;
+                                                        font-weight: bold;
+                                                    ">
+                                            A
+                                        </div>
+                                        <div>
+                                            <strong>Appointment #@item.appointment_id</strong>
+                                            <div class="small text-muted">
+                                                @item.Appointment?.appointment_date.ToString("MMM dd, yyyy")
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="fw-bold">
+                                    @item.total_amount.ToString("C")
+                                </td>
+                                <td>
+                                    @if (item.payment_status == "Paid")
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>@item.payment_status
+                                        </span>
+                                    }
+                                    else if (item.payment_status == "Overdue")
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-exclamation-circle me-1"></i>@item.payment_status
+                                        </span>
+                                    }
+                                    else if (item.payment_status == "Pending")
+                                    {
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>@item.payment_status
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-info-circle me-1"></i>@item.payment_status
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.payment_date.HasValue)
+                                    {
+                                        <strong>@item.payment_date.Value.ToString("MMM dd, yyyy")</strong>
+                                        <div class="small text-muted">
+                                            @item.payment_date.Value.ToString("hh:mm tt")
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not Paid</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.bill_id"
+                                           class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.bill_id"
+                                           class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.bill_id"
+                                           class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-light">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted">
+                        Showing <strong>@Model.Count()</strong> bills |
+                        Total: <strong class="text-primary">@totalAmount.ToString("C")</strong> |
+                        Paid: <strong class="text-success">@paidAmount.ToString("C")</strong> |
+                        Pending: <strong class="text-warning">@pendingAmount.ToString("C")</strong>
+                    </span>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Create New Bill
+                    </a>
+                    <a href="#" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-print me-2"></i>Print Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Button -->
+    <div class="text-center mt-4">
+        <a href="#" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-file-export me-2"></i>Export Financial Report
+        </a>
+    </div>
+}
+
+<!-- Custom Styles -->
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%) !important;
+    }
+
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%) !important;
+    }
+
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%) !important;
+    }
+
+    .bg-gradient-info {
+        background: linear-gradient(135deg, #0dcaf0 0%, #6610f2 100%) !important;
+    }
+
+    .avatar-circle {
+        transition: transform 0.3s ease;
+    }
+
+    tr:hover .avatar-circle {
+        transform: scale(1.1);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05) !important;
+    }
+
+    .btn-group .btn {
+        border-radius: 6px !important;
+        margin: 0 2px;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        font-weight: 500;
+    }
+
+    .quick-actions .btn {
+        transition: all 0.3s ease;
+    }
+
+        .quick-actions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+</style>

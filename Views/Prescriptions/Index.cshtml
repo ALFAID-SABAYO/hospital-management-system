@@ -1,0 +1,61 @@
+﻿@model IEnumerable<Hospital.Models.Prescription>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.medication_name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.dosage)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.start_date)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.end_date)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MedicalRecord)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.medication_name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.dosage)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.start_date)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.end_date)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MedicalRecord.record_id)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.prescription_id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.prescription_id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.prescription_id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

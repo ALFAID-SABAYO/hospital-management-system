@@ -1,0 +1,121 @@
+﻿@{
+    ViewData["Title"] = "Doctor Schedule";
+    var doctor = ViewBag.Doctor as Hospital.Models.Doctor;
+    var weekStart = ViewBag.WeekStart as DateTime? ?? DateTime.Today;
+    var weekEnd = ViewBag.WeekEnd as DateTime? ?? DateTime.Today.AddDays(6);
+    var schedules = ViewBag.Schedules as IEnumerable<Hospital.Models.DoctorSchedule> ?? new List<Hospital.Models.DoctorSchedule>();
+    var appointments = ViewBag.Appointments as IEnumerable<Hospital.Models.Appointment> ?? new List<Hospital.Models.Appointment>();
+}
+
+<h2>Doctor Schedule</h2>
+<h4>Dr. @doctor?.first_name @doctor?.last_name</h4>
+<hr />
+
+<!-- Week Navigation -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5>Week: @weekStart.ToString("MMM dd") - @weekEnd.ToString("MMM dd, yyyy")</h5>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="@Url.Action("Schedule", new { id = doctor?.doctor_id, weekStart = weekStart.AddDays(-7) })"
+                   class="btn btn-secondary">Previous Week</a>
+                <a href="@Url.Action("Schedule", new { id = doctor?.doctor_id })"
+                   class="btn btn-secondary">Current Week</a>
+                <a href="@Url.Action("Schedule", new { id = doctor?.doctor_id, weekStart = weekStart.AddDays(7) })"
+                   class="btn btn-secondary">Next Week</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Table -->
+<div class="card">
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Day</th>
+                    <th>Date</th>
+                    <th>Schedule</th>
+                    <th>Appointments</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < 7; i++)
+                {
+                    var currentDate = weekStart.AddDays(i);
+                    var daySchedule = schedules.FirstOrDefault(s => s.available_date.Date == currentDate.Date);
+                    var dayAppointments = appointments.Where(a => a.appointment_date.Date == currentDate.Date).ToList();
+
+                    <tr>
+                        <td>@currentDate.ToString("dddd")</td>
+                        <td>@currentDate.ToString("MM/dd/yyyy")</td>
+                        <td>
+                            @if (daySchedule != null)
+                            {
+                                <span class="badge bg-success">
+                                    @daySchedule.start_time.ToString("hh:mm tt") - @daySchedule.end_time.ToString("hh:mm tt")
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Not Available</span>
+                            }
+                        </td>
+                        <td>
+                            @if (dayAppointments.Any())
+                            {
+                                <div>
+                                    @foreach (var app in dayAppointments)
+                                    {
+                                        <span class="badge bg-info mb-1">
+                                            @app.appointment_date.ToString("hh:mm tt") - @app.Patient?.first_name
+                                        </span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <span>No appointments</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Set Schedule Form -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Set/Update Schedule</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="SetSchedule" method="post" class="row">
+            <input type="hidden" name="doctorId" value="@doctor?.doctor_id" />
+
+            <div class="col-md-3">
+                <label>Date</label>
+                <input type="date" name="scheduleDate" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label>Start Time</label>
+                <input type="time" name="startTime" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label>End Time</label>
+                <input type="time" name="endTime" class="form-control" required />
+            </div>
+            <div class="col-md-3 mt-4">
+                <button type="submit" class="btn btn-primary">Set Schedule</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Details" asp-route-id="@doctor?.doctor_id" class="btn btn-secondary">Back to Doctor Details</a>
+</div>

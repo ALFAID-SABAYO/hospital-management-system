@@ -1,0 +1,117 @@
+@model IEnumerable<Hospital.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Daily Appointments Report";
+    var selectedDate = ViewBag.SelectedDate as DateTime? ?? DateTime.Today;
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-calendar-day text-primary"></i> Daily Appointments Report</h2>
+                    <p class="text-muted">Appointments for @selectedDate.ToString("MMMM dd, yyyy")</p>
+                </div>
+                <div>
+                    <a asp-action="ExportDailyAppointmentsExcel" asp-route-date="@selectedDate.ToString("yyyy-MM-dd")" class="btn btn-success">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Total</h5>
+                    <h3>@ViewBag.TotalAppointments</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Completed</h5>
+                    <h3>@ViewBag.CompletedAppointments</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5>Pending</h5>
+                    <h3>@ViewBag.PendingAppointments</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5>Cancelled</h5>
+                    <h3>@ViewBag.CancelledAppointments</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Status</th>
+                            <th>Billing</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.appointment_date.ToString("HH:mm")</td>
+                                    <td>@item.Patient?.first_name @item.Patient?.last_name</td>
+                                    <td>@item.Doctor?.first_name @item.Doctor?.last_name</td>
+                                    <td>
+                                        <span class="badge bg-@(item.status == "Completed" ? "success" : item.status == "Cancelled" ? "danger" : "warning")">
+                                            @item.status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (item.Billing != null)
+                                        {
+                                            <span class="badge bg-info">$@item.Billing.total_amount.ToString("F2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No appointments found for this date.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

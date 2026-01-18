@@ -1,0 +1,155 @@
+﻿@model Hospital.Models.Patient
+@using System.Linq
+@{
+    ViewData["Title"] = "Patient Registration";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Patient Registration</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Register" method="post">
+                        <!-- ADD THIS SECTION FOR VALIDATION ERRORS -->
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <h5 class="alert-heading">Please fix the following errors:</h5>
+                                <ul class="mb-0">
+                                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <h5 class="mb-3">Personal Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="first_name" class="form-label">First Name *</label>
+                                    <input asp-for="first_name" class="form-control" placeholder="Enter first name" />
+                                    <span asp-validation-for="first_name" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="last_name" class="form-label">Last Name *</label>
+                                    <input asp-for="last_name" class="form-control" placeholder="Enter last name" />
+                                    <span asp-validation-for="last_name" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="gender" class="form-label">Gender *</label>
+                                    <select asp-for="gender" class="form-control">
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <span asp-validation-for="gender" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="date_of_birth" class="form-label">Date of Birth *</label>
+                                    <input asp-for="date_of_birth" type="date" class="form-control" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                    <span asp-validation-for="date_of_birth" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="mb-3 mt-4">Contact Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="email" class="form-label">Email Address *</label>
+                                    <input asp-for="email" type="email" class="form-control" placeholder="example@email.com" />
+                                    <span asp-validation-for="email" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="contact_number" class="form-label">Phone Number *</label>
+                                    <input asp-for="contact_number" class="form-control" placeholder="+92-3001234567" />
+                                    <span asp-validation-for="contact_number" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="address" class="form-label">Address</label>
+                            <textarea asp-for="address" class="form-control" rows="2" placeholder="Full address"></textarea>
+                            <span asp-validation-for="address" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="blood_group" class="form-label">Blood Group</label>
+                            <select asp-for="blood_group" class="form-control">
+                                <option value="">Select Blood Group</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                            <span asp-validation-for="blood_group" class="text-danger"></span>
+                        </div>
+
+                        <h5 class="mb-3 mt-4">Account Security</h5>
+                        <div class="form-group mb-3">
+                            <label class="form-label">Password *</label>
+                            <input type="password" name="password" class="form-control" placeholder="Create a password" />
+                            <small class="form-text text-muted">Password must be at least 6 characters long.</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Confirm Password *</label>
+                            <input type="password" name="confirmPassword" class="form-control" placeholder="Confirm your password" />
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a asp-action="Login" class="btn btn-outline-secondary me-md-2">Back to Login</a>
+                            <button type="submit" class="btn btn-primary">Register Account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Password confirmation validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var password = document.querySelector('input[name="password"]').value;
+            var confirmPassword = document.querySelector('input[name="confirmPassword"]').value;
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return false;
+            }
+
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('Password must be at least 6 characters long!');
+                return false;
+            }
+        });
+    </script>
+}

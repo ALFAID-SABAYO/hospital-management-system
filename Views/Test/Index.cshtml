@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["Title"] = "Database Test";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <h1>Database Connection Test</h1>
+
+    @if (ViewData["Message"] != null)
+    {
+        <div class="alert alert-info mt-4">
+            <h3>@ViewData["Message"]</h3>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <h3>No message received</h3>
+        </div>
+    }
+
+    <a href="/" class="btn btn-primary mt-3">Back to Home</a>
+</div>

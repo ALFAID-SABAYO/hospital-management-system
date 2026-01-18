@@ -1,0 +1,96 @@
+@using System.Linq
+@{
+    ViewData["Title"] = "Hospital Login";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Hospital Login</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Success Message -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Login" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <!-- User Type Selection -->
+                        <div class="form-group mb-3">
+                            <label class="form-label">Login As:</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="userType" id="patient" value="Patient" checked>
+                                <label class="btn btn-outline-primary" for="patient">Patient</label>
+
+                                <input type="radio" class="btn-check" name="userType" id="doctor" value="Doctor">
+                                <label class="btn btn-outline-primary" for="doctor">Doctor</label>
+
+                                <input type="radio" class="btn-check" name="userType" id="receptionist" value="Receptionist">
+                                <label class="btn btn-outline-primary" for="receptionist">Receptionist</label>
+
+                                <input type="radio" class="btn-check" name="userType" id="admin" value="Admin">
+                                <label class="btn btn-outline-primary" for="admin">Admin</label>
+                            </div>
+                        </div>
+
+                        <!-- Username/Email -->
+                        <div class="form-group mb-3">
+                            <label id="usernameLabel">Email Address</label>
+                            <input name="username" class="form-control" placeholder="Enter your email" required />
+                        </div>
+
+                        <!-- Password -->
+                        <div class="form-group mb-3">
+                            <label>Password</label>
+                            <input name="password" type="password" class="form-control" placeholder="Enter your password" required />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Login</button>
+
+                        <!-- Registration Link -->
+                        <div class="text-center mt-3">
+                            <p>Don't have an account? <a href="/Account/Register">Register as Patient</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Change label based on user type
+        document.querySelectorAll('input[name="userType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const label = document.getElementById('usernameLabel');
+                const input = document.querySelector('input[name="username"]');
+                if (this.value === 'Patient' || this.value === 'Doctor') {
+                    label.textContent = 'Email Address';
+                    input.placeholder = 'Enter your email';
+                    input.type = 'email';
+                } else {
+                    label.textContent = 'Username';
+                    input.placeholder = 'Enter admin username';
+                    input.type = 'text';
+                }
+            });
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const patientRadio = document.getElementById('patient');
+            if (patientRadio.checked) {
+                document.getElementById('usernameLabel').textContent = 'Email Address';
+            }
+        });
+    </script>
+}

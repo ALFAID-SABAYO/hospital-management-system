@@ -1,0 +1,419 @@
+﻿@model IEnumerable<Hospital.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Appointment Management";
+    var hasAppointments = Model != null && Model.Any();
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-calendar-check text-primary"></i> Appointment Management</h2>
+        <p class="text-muted">Schedule, track, and manage patient appointments</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary btn-lg">
+        <i class="fas fa-calendar-plus"></i> Book Appointment
+    </a>
+</div>
+
+@if (!hasAppointments)
+{
+    <!-- No Data Message -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+            <h3 class="text-muted">No Appointments Found</h3>
+
+            @if (User.IsInRole("Patient"))
+            {
+                <p class="text-muted mb-4">You don't have any appointments scheduled yet.</p>
+                <a asp-action="Create" class="btn btn-primary btn-lg">
+                    <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
+                </a>
+            }
+            else
+            {
+                <p class="text-muted mb-4">There are no appointments in the system yet.</p>
+                <a asp-action="Create" class="btn btn-primary btn-lg">
+                    <i class="fas fa-calendar-plus me-2"></i>Create First Appointment
+                </a>
+            }
+
+            <div class="mt-4">
+                <p class="text-muted small">Or explore other options:</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="/Doctors" class="btn btn-outline-primary">
+                        <i class="fas fa-user-md me-2"></i>View Doctors
+                    </a>
+                    <a href="/DoctorSchedules" class="btn btn-outline-success">
+                        <i class="fas fa-calendar-alt me-2"></i>View Schedules
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-gradient-primary text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-calendar-alt fa-3x mb-3 opacity-75"></i>
+                    <h2 class="display-5 fw-bold">@Model.Count()</h2>
+                    <p class="mb-0 fs-5">Total Appointments</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-gradient-success text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-check-circle fa-3x mb-3 opacity-75"></i>
+                    <h2 class="display-5 fw-bold">@Model.Count(a => a.status == "Completed")</h2>
+                    <p class="mb-0 fs-5">Completed</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-gradient-warning text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-clock fa-3x mb-3 opacity-75"></i>
+                    <h2 class="display-5 fw-bold">@Model.Count(a => a.status == "Scheduled" || a.status == "Confirmed")</h2>
+                    <p class="mb-0 fs-5">Upcoming</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm bg-gradient-danger text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-times-circle fa-3x mb-3 opacity-75"></i>
+                    <h2 class="display-5 fw-bold">@Model.Count(a => a.status == "Cancelled")</h2>
+                    <p class="mb-0 fs-5">Cancelled</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    @* <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Appointments</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-calendar-day text-primary"></i>
+                        </span>
+                        <input type="date" class="form-control" placeholder="Select Date">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-user-md text-success"></i>
+                        </span>
+                        <select class="form-control">
+                            <option value="">All Doctors</option>
+                            <option value="1">Dr. Smith</option>
+                            <option value="2">Dr. Johnson</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-stethoscope text-info"></i>
+                        </span>
+                        <select class="form-control">
+                            <option value="">All Status</option>
+                            <option value="Scheduled">Scheduled</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i>Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div> *@
+
+    <!-- Quick Actions -->
+    @* <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-plus me-2"></i>Today
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-success w-100">
+                                <i class="fas fa-calendar-week me-2"></i>This Week
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-info w-100">
+                                <i class="fas fa-calendar me-2"></i>This Month
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-clock me-2"></i>Upcoming
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-times me-2"></i>Cancelled
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="#" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-history me-2"></i>All
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> *@
+
+    <!-- Appointments Table -->
+    <div class="card border-0 shadow-sm text-black">
+        <div class="card-body p-0  text-black">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0  text-black">
+                    <thead class="table-light  text-black">
+                        <tr>
+                            <th class="ps-4">
+                                <i class="fas fa-hashtag me-2"></i>Appointment ID
+                            </th>
+                            <th>
+                                <i class="fas fa-user-injured me-2"></i>Patient
+                            </th>
+                            <th>
+                                <i class="fas fa-user-md me-2"></i>Doctor
+                            </th>
+                            <th>
+                                <i class="fas fa-calendar-alt me-2"></i>Date & Time
+                            </th>
+                            <th>
+                                <i class="fas fa-clock me-2"></i>Time Slot
+                            </th>
+                            <th>
+                                <i class="fas fa-info-circle me-2"></i>Status
+                            </th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">
+                                        APT-@item.appointment_id
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3" style="
+                                                        width: 40px;
+                                                        height: 40px;
+                                                        background: linear-gradient(135deg, #0d6efd 0%, #198754 100%);
+                                                        border-radius: 50%;
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        color: white;
+                                                        font-weight: bold;
+                                                    ">
+                                            P
+                                        </div>
+                                        <div>
+                                            <strong>Patient #@item.patient_id</strong>
+                                            <div class="small text-muted">ID: @item.patient_id</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3" style="
+                                                        width: 40px;
+                                                        height: 40px;
+                                                        background: linear-gradient(135deg, #20c997 0%, #0dcaf0 100%);
+                                                        border-radius: 50%;
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        color: white;
+                                                        font-weight: bold;
+                                                    ">
+                                            D
+                                        </div>
+                                        <div>
+                                            <strong>Dr. #@item.doctor_id</strong>
+                                            <div class="small text-muted">Doctor ID</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>@item.appointment_date.ToString("MMM dd, yyyy")</strong>
+                                    <div class="small text-muted">
+                                        @item.appointment_date.ToString("hh:mm tt")
+                                    </div>
+                                </td>
+                                <td class="text-dark">
+                                    @{
+                                        var hour = item.appointment_date.Hour;
+                                        var timeSlot = hour < 12 ? "Morning" :
+                                        hour < 17 ? "Afternoon" : "Evening";
+                                    }
+                                    <span class="badge bg-info bg-opacity-10 text-dark">
+                                        <i class="fas fa-sun me-1"></i>@timeSlot
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (item.status == "Completed")
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>@item.status
+                                        </span>
+                                    }
+                                    else if (item.status == "Cancelled")
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle me-1"></i>@item.status
+                                        </span>
+                                    }
+                                    else if (item.status == "Confirmed")
+                                    {
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-calendar-check me-1"></i>@item.status
+                                        </span>
+                                    }
+                                    else if (item.status == "In Progress")
+                                    {
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-spinner me-1"></i>@item.status
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-clock me-1"></i>@item.status
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.appointment_id"
+                                           class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.appointment_id"
+                                           class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.appointment_id"
+                                           class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-light">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted">
+                        Showing <strong>@Model.Count()</strong> appointments
+                    </span>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-calendar-plus me-2"></i>Book New Appointment
+                    </a>
+                    <a href="#" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-print me-2"></i>Print Schedule
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar View Button -->
+    <div class="text-center mt-4">
+        <a asp-action="Calendar" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-calendar-alt me-2"></i>Switch to Calendar View
+        </a>
+    </div>
+}
+
+<!-- Custom Styles -->
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%) !important;
+    }
+
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%) !important;
+    }
+
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%) !important;
+    }
+
+    .bg-gradient-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%) !important;
+    }
+
+    .avatar-circle {
+        transition: transform 0.3s ease;
+    }
+
+    tr:hover .avatar-circle {
+        transform: scale(1.1);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05) !important;
+    }
+
+    .btn-group .btn {
+        border-radius: 6px !important;
+        margin: 0 2px;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        font-weight: 500;
+    }
+
+    .quick-actions .btn {
+        transition: all 0.3s ease;
+    }
+
+        .quick-actions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+</style>

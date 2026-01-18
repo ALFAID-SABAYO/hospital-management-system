@@ -1,0 +1,226 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Hospital</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Hospital.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<script>
+    // Auto-add text to all action buttons on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to add text to buttons
+        function addButtonText() {
+            // Find all buttons with Font Awesome icons
+            const buttons = document.querySelectorAll('.btn');
+
+            buttons.forEach(button => {
+                const icon = button.querySelector('i');
+                if (!icon) return;
+
+                // Check if button already has text
+                if (button.textContent.trim().length > 2) return;
+
+                // Add text based on icon class
+                if (icon.classList.contains('fa-eye') ||
+                    icon.classList.contains('fa-info-circle')) {
+                    button.innerHTML = '<i class="' + icon.className + '"></i> View';
+                }
+                else if (icon.classList.contains('fa-edit') ||
+                         icon.classList.contains('fa-pencil-alt')) {
+                    button.innerHTML = '<i class="' + icon.className + '"></i> Edit';
+                }
+                else if (icon.classList.contains('fa-trash') ||
+                         icon.classList.contains('fa-trash-alt')) {
+                    button.innerHTML = '<i class="' + icon.className + '"></i> Delete';
+                }
+                else if (icon.classList.contains('fa-plus')) {
+                    button.innerHTML = '<i class="' + icon.className + '"></i> Add';
+                }
+                else if (icon.classList.contains('fa-save')) {
+                    button.innerHTML = '<i class="' + icon.className + '"></i> Save';
+                }
+                else if (icon.classList.contains('fa-times')) {
+                    button.innerHTML = '<i class="' + icon.className + '"></i> Cancel';
+                }
+            });
+        }
+
+        // Run on page load
+        addButtonText();
+
+        // Also run when content changes (for dynamic content)
+        const observer = new MutationObserver(addButtonText);
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
+</script>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Szabist Hospital</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+
+                        <!-- Always visible to ALL users (logged in or not) -->
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Doctors" asp-action="Index">Doctors</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Departments" asp-action="Index">Departments</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="DoctorSchedules" asp-action="Index">
+                                <i class="fas fa-calendar-alt me-1"></i>Schedules
+                            </a>
+                        </li>
+
+                        <!-- Only show when user is logged in -->
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <!-- Patients list - only for Admin/Doctors -->
+                            @if (!User.IsInRole("Patient"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Patients" asp-action="Index">Patients</a>
+                                </li>
+                            }
+
+                            <!-- Appointments link based on role -->
+                            @if (User.IsInRole("Patient"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Appointments" asp-action="MyAppointments">
+                                        <i class="fas fa-calendar-check me-1"></i>My Appointments
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Appointments" asp-action="Index">Appointments</a>
+                                </li>
+                            }
+
+                            <!-- Patient-specific links in navbar -->
+                            @if (User.IsInRole("Patient"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="MedicalRecords" asp-action="MyRecords">
+                                        <i class="fas fa-file-medical me-1"></i>My Records
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Billings" asp-action="MyBills">
+                                        <i class="fas fa-file-invoice-dollar me-1"></i>My Bills
+                                    </a>
+                                </li>
+                            }
+
+                            <!-- Medical & Billing dropdown - only for Admin/Doctors -->
+                            @if (!User.IsInRole("Patient"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                        Medical &amp; Billing
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="MedicalRecords" asp-action="Index">
+                                                <i class="fas fa-file-medical me-2"></i>Medical Records
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Prescriptions" asp-action="Index">
+                                                <i class="fas fa-prescription me-2"></i>Prescriptions
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Billings" asp-action="Index">
+                                                <i class="fas fa-file-invoice-dollar me-2"></i>Billing &amp; Invoices
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                        }
+                    </ul>
+
+                    <!-- Authentication Buttons -->
+                    <div class="navbar-nav align-items-center">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i> @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    @if (User.IsInRole("Patient"))
+                                    {
+                                        <li><a class="dropdown-item" href="/Patients/Dashboard"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a></li>
+                                        <li><a class="dropdown-item" href="/Patients/Details/@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value"><i class="fas fa-user me-2"></i> My Profile</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    <!-- REMOVED ADMIN PANEL LINK - Admin sees only Logout -->
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-light me-2" asp-controller="Account" asp-action="Register">
+                                <i class="fas fa-user-plus me-1"></i> Register
+                            </a>
+                            <a class="btn btn-light text-primary fw-bold" asp-controller="Account" asp-action="Login">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footer py-3 mt-5 border-top" style="background-color: #f8f9fa;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted">
+                        &amp;copy; @DateTime.Now.Year - Szabist Hospital Management System
+                    </span>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-muted me-3"><i class="fas fa-phone me-1"></i> Emergency: 911</a>
+                    <a asp-controller="Home" asp-action="Privacy" class="text-muted">Privacy Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

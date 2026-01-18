@@ -1,0 +1,55 @@
+﻿@model Hospital.Models.Doctor
+
+@{
+    ViewData["Title"] = "Doctor Dashboard";
+}
+
+<h2>Doctor Dashboard</h2>
+<h4>Dr. @Model.first_name @Model.last_name</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5>Today's Appointments</h5>
+                <h3>@ViewBag.TodayAppointments</h3>
+                <small>@ViewBag.Today</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5>This Month</h5>
+                <h3>@ViewBag.MonthAppointments</h3>
+                <small>Appointments</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5>Completed</h5>
+                <h3>@ViewBag.CompletedAppointments</h3>
+                <small>Appointments</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5>Total Patients</h5>
+                <h3>@ViewBag.TotalPatients</h3>
+                <small>Patients</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-secondary">Back to Doctors List</a>
+</div>

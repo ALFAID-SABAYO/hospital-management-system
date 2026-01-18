@@ -1,0 +1,297 @@
+﻿@model Hospital.Models.Patient
+@{
+    ViewData["Title"] = "Patient Dashboard";
+    var hasData = ViewBag.HasData ?? false;
+    var patientName = ViewBag.PatientName ?? "Patient";
+}
+
+<div class="container-fluid">
+    <!-- Welcome Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-1">Welcome, @patientName!</h4>
+                            <p class="card-text mb-0">Your Personal Health Dashboard</p>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-primary fs-6">Patient ID: @Model.patient_id</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!hasData)
+    {
+        <!-- No Data Message -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                        <h3 class="text-muted">No Medical Data Found</h3>
+                        <p class="text-muted mb-4">You don't have any appointments or medical records yet.</p>
+                        <a href="/Appointments/Create" class="btn btn-primary btn-lg">
+                            <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Quick Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Total Appointments</h5>
+                        <h2 class="mb-0">@ViewBag.TotalAppointments</h2>
+                        <p class="card-text">Upcoming: @ViewBag.UpcomingAppointments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Medical Records</h5>
+                        <h2 class="mb-0">@ViewBag.MedicalRecords</h2>
+                        <p class="card-text">Health History</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Pending Bills</h5>
+                        <h2 class="mb-0">@ViewBag.PendingBills.ToString("C")</h2>
+                        <p class="card-text">Payment Due</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Next Appointment</h5>
+                        @if (ViewBag.UpcomingAppointments > 0 && ViewBag.RecentAppointments.Count > 0)
+                        {
+                            var nextApp = ViewBag.RecentAppointments[0] as Hospital.Models.Appointment;
+                            <h6 class="mb-1">@nextApp.appointment_date.ToString("MMM dd, yyyy")</h6>
+                            <p class="card-text mb-0">Dr. @nextApp.Doctor?.first_name</p>
+                        }
+                        else
+                        {
+                            <h6 class="mb-0">None Scheduled</h6>
+                            <p class="card-text">Book an appointment</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <a href="/Appointments/Create" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="fas fa-calendar-plus fa-2x mb-2"></i><br>
+                                    Book Appointment
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="/Appointments/MyAppointments" class="btn btn-outline-success w-100 py-3">
+                                    <i class="fas fa-list-alt fa-2x mb-2"></i><br>
+                                    My Appointments
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="/MedicalRecords/MyRecords" class="btn btn-outline-info w-100 py-3">
+                                    <i class="fas fa-file-medical fa-2x mb-2"></i><br>
+                                    Medical Records
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="/Billings/MyBills" class="btn btn-outline-warning w-100 py-3">
+                                    <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i><br>
+                                    View Bills
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Appointments -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Upcoming Appointments</h5>
+                        <a href="/Appointments/MyAppointments" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        @if (ViewBag.RecentAppointments.Count > 0)
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Date & Time</th>
+                                            <th>Doctor</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var appointment in ViewBag.RecentAppointments)
+                                        {
+                                            <tr>
+                                                <td>@appointment.appointment_date.ToString("MMM dd, yyyy hh:mm tt")</td>
+                                                <td>Dr. @appointment.Doctor?.first_name @appointment.Doctor?.last_name</td>
+                                                <td>
+                                                    @if (appointment.status == "Scheduled")
+                                                    {
+                                                        <span class="badge bg-warning">@appointment.status</span>
+                                                    }
+                                                    else if (appointment.status == "Completed")
+                                                    {
+                                                        <span class="badge bg-success">@appointment.status</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-info">@appointment.status</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-3">
+                                <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">No upcoming appointments</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Medical Records -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Medical Records</h5>
+                        <a href="/MedicalRecords/MyRecords" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        @if (ViewBag.RecentRecords.Count > 0)
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Visit Date</th>
+                                            <th>Diagnosis</th>
+                                            <th>Doctor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var record in ViewBag.RecentRecords)
+                                        {
+                                            <tr>
+                                                <td>@record.visit_date.ToString("MMM dd, yyyy")</td>
+                                                <td>
+                                                    @if (record.diagnosis.Length > 30)
+                                                    {
+                                                        @record.diagnosis.Substring(0, 30)
+                                        
+                                                        <text>...</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        @record.diagnosis
+                                                    }
+                                                </td>
+                                                <td>Dr. @record.Appointment?.Doctor?.first_name</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-3">
+                                <i class="fas fa-file-medical fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">No medical records yet</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Patient Information Card -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">My Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Patient ID:</strong><br>
+                        <span class="text-primary">@Model.patient_id</span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Name:</strong><br>
+                        @Model.first_name @Model.last_name
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Email:</strong><br>
+                        @Model.email
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Phone:</strong><br>
+                        @Model.contact_number
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <strong>Gender:</strong><br>
+                        @Model.gender
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Date of Birth:</strong><br>
+                        @Model.date_of_birth.ToString("MMMM dd, yyyy")
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Blood Group:</strong><br>
+                        @(string.IsNullOrEmpty(Model.blood_group) ? "Not specified" : Model.blood_group)
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Address:</strong><br>
+                        @(string.IsNullOrEmpty(Model.address) ? "Not specified" : Model.address)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

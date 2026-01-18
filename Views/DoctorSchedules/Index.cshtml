@@ -1,0 +1,191 @@
+﻿@model IEnumerable<Hospital.Models.DoctorSchedule>
+
+@{
+    ViewData["Title"] = "Doctor Schedules";
+}
+
+<h2><i class="fas fa-calendar-alt text-primary"></i> Doctor Schedules</h2>
+
+<!-- Simple Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white text-center p-3">
+            <i class="fas fa-user-md fa-2x mb-2"></i>
+            <h4>@ViewBag.TotalDoctors</h4>
+            <p class="mb-0">Doctors</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white text-center p-3">
+            <i class="fas fa-calendar-check fa-2x mb-2"></i>
+            <h4>@Model.Count()</h4>
+            <p class="mb-0">Schedules</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white text-center p-3">
+            <i class="fas fa-clock fa-2x mb-2"></i>
+            <h4>@GetTotalHours() hrs</h4>
+            <p class="mb-0">Total Hours</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white text-center p-3">
+            <i class="fas fa-users fa-2x mb-2"></i>
+            <h4>@GetTotalAppointments()</h4>
+            <p class="mb-0">Bookings</p>
+        </div>
+    </div>
+</div>
+
+<!-- Simple Weekly View -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="fas fa-calendar-week me-2"></i> This Week</h5>
+    </div>
+    <div class="card-body p-2">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center">Mon</th>
+                        <th class="text-center">Tue</th>
+                        <th class="text-center">Wed</th>
+                        <th class="text-center">Thu</th>
+                        <th class="text-center">Fri</th>
+                        <th class="text-center">Sat</th>
+                        <th class="text-center">Sun</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            var day = DateTime.Today.AddDays(i);
+                            var daySchedules = Model.Count(s => s.available_date.Date == day.Date);
+                            <td class="text-center p-3 @(day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday ? "bg-light" : "")">
+                                <div class="fw-bold">@day.ToString("dd")</div>
+                                <div class="small text-muted mb-2">@day.ToString("ddd")</div>
+                                @if (daySchedules > 0)
+                                {
+                                    <span class="badge bg-success">@daySchedules slots</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">None</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Schedules Table -->
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Booked</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderBy(s => s.available_date))
+                {
+                    <tr>
+                        <td>
+                            <strong>Dr. @item.Doctor?.first_name</strong>
+                            <div class="small text-muted">@item.Doctor?.specialization</div>
+                        </td>
+                        <td>
+                            @item.available_date.ToString("MMM dd")
+                            <div class="small text-muted">@item.available_date.ToString("ddd")</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">
+                                @item.start_time.ToString("hh:mm tt") - @item.end_time.ToString("hh:mm tt")
+                            </span>
+                        </td>
+                        <td>
+                            @{
+                                var booked = GetAppointmentCount(item.schedule_id);
+                                var total = 8;
+                                var percent = (booked * 100) / total;
+                            }
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: @percent%"></div>
+                            </div>
+                            <small>@booked/@total slots</small>
+                        </td>
+                        <td>
+                            @if (item.available_date < DateTime.Today)
+                            {
+                                <span class="badge bg-secondary">Past</span>
+                            }
+                            else if (item.available_date == DateTime.Today)
+                            {
+                                <span class="badge bg-primary">Today</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Upcoming</span>
+                            }
+                        </td>
+                        <td>
+                            @* Only show actions to Admin or to the Doctor who owns this schedule *@
+                            @if (User.IsInRole("Admin") || (User.IsInRole("Doctor") && User.Identity.Name == item.Doctor?.email))
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.schedule_id" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.schedule_id" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer text-center">
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Schedule
+            </a>
+        }
+    </div>
+</div>
+
+@functions {
+    private int GetTotalHours()
+    {
+        int total = 0;
+        foreach (var s in Model)
+        {
+            total += (s.end_time - s.start_time).Hours;
+        }
+        return total;
+    }
+
+    private int GetTotalAppointments()
+    {
+        // Demo count, adjust as needed
+        return Model.Count() * 3;
+    }
+
+    private int GetAppointmentCount(int scheduleId)
+    {
+        // Demo random count for progress bar
+        return new Random(scheduleId).Next(0, 8);
+    }
+}

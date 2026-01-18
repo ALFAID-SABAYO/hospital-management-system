@@ -1,0 +1,47 @@
+﻿@model MedicalRecord
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>MedicalRecord</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="appointment_id" class="control-label"></label>
+                <select asp-for="appointment_id" class ="form-control" asp-items="ViewBag.appointment_id"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="visit_date" class="control-label"></label>
+                <input asp-for="visit_date" class="form-control" />
+                <span asp-validation-for="visit_date" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="diagnosis" class="control-label"></label>
+                <input asp-for="diagnosis" class="form-control" />
+                <span asp-validation-for="diagnosis" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="note" class="control-label"></label>
+                <input asp-for="note" class="form-control" />
+                <span asp-validation-for="note" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

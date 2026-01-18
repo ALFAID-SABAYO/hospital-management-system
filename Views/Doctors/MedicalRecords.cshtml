@@ -1,0 +1,44 @@
+﻿@* Use dynamic model to avoid compilation error *@
+@{
+    ViewData["Title"] = "Doctor Medical Records";
+    var doctor = ViewBag.Doctor as Hospital.Models.Doctor;
+    var medicalRecords = Model as IEnumerable<dynamic> ?? new List<dynamic>();
+}
+
+<h2>Medical Records</h2>
+<h4>Dr. @doctor?.first_name @doctor?.last_name</h4>
+<hr />
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Record ID</th>
+                    <th>Patient</th>
+                    <th>Visit Date</th>
+                    <th>Diagnosis</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var record in medicalRecords)
+                {
+                    <tr>
+                        <td>@record.record_id</td>
+                        <td>Patient #@record.Appointment?.patient_id</td>
+                        <td>@record.visit_date</td>
+                        <td>@record.diagnosis</td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-info">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Details" asp-route-id="@doctor?.doctor_id" class="btn btn-secondary">Back to Doctor Details</a>
+</div>

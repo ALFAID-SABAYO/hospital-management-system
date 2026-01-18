@@ -1,0 +1,111 @@
+@model IEnumerable<Hospital.Models.Billing>
+
+@{
+    ViewData["Title"] = "Billing Summary Report";
+    var startDate = ViewBag.StartDate as DateTime? ?? DateTime.Today.AddDays(-30);
+    var endDate = ViewBag.EndDate as DateTime? ?? DateTime.Today;
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-file-invoice-dollar text-success"></i> Billing Summary Report</h2>
+                    <p class="text-muted">From @startDate.ToString("MMMM dd, yyyy") to @endDate.ToString("MMMM dd, yyyy")</p>
+                </div>
+                <div>
+                    <a asp-action="ExportBillingSummaryExcel" asp-route-startDate="@startDate.ToString("yyyy-MM-dd")" asp-route-endDate="@endDate.ToString("yyyy-MM-dd")" class="btn btn-success">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Total Amount</h5>
+                    <h3>$@ViewBag.TotalAmount.ToString("F2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Paid</h5>
+                    <h3>$@ViewBag.PaidAmount.ToString("F2")</h3>
+                    <small>@ViewBag.PaidBills bills</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5>Pending</h5>
+                    <h3>$@ViewBag.PendingAmount.ToString("F2")</h3>
+                    <small>@ViewBag.PendingBills bills</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>Total Bills</h5>
+                    <h3>@ViewBag.TotalBills</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Billing Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@(item.payment_date?.ToString("MMM dd, yyyy") ?? "-")</td>
+                                    <td>@item.Appointment?.Patient?.first_name @item.Appointment?.Patient?.last_name</td>
+                                    <td>@item.Appointment?.Doctor?.first_name @item.Appointment?.Doctor?.last_name</td>
+                                    <td><strong>$@item.total_amount.ToString("F2")</strong></td>
+                                    <td>
+                                        <span class="badge bg-@(item.payment_status == "Paid" ? "success" : "warning")">
+                                            @item.payment_status
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No billing records found for this period.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
